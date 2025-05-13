@@ -1,12 +1,8 @@
-
 {
   "name": "kosh",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A lightweight, modular, and beginner-friendly state management library.",
   "main": "src/index.js",
-  "scripts": {
-    "start":"node src/index.js"
-  },
   "keywords": [
     "state management",
     "react",
@@ -16,6 +12,9 @@
     "encryption",
     "javascript"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "sachin sharma",
   "license": "MIT",
   "repository": {

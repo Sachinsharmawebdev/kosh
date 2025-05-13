@@ -31,7 +31,12 @@ npm install kosh
 ```js
 import { createKosh } from 'kosh';
 
-const store = createKosh({ count: 0 });
+const store = createKosh({
+  state: { count: 0 },  // State object
+  persistKey: 'my-app-count', // Persistence key for storing state
+  ttl: 86400000, // Optional TTL (Time-to-live) for persistence
+  secret: 'my-secret-key', // Optional encryption key
+});
 
 store.subscribe(state => {
   console.log('Updated state:', state);
@@ -47,10 +52,12 @@ console.log(store.get('count')); // 100
 ## 🔁 With Persistence
 
 ```js
-const store = createKosh({ theme: 'light' }, {
-  persistKey: 'my-app-theme',
-  ttl: 86400000, // 1 day in ms
+const store = createKosh({
+  state: { theme: 'light' },
+  persistKey: 'my-app-theme',  // The persistence key
+  ttl: 86400000, // 1 day in ms (optional)
 });
+
 ```
 
 ---
@@ -58,10 +65,12 @@ const store = createKosh({ theme: 'light' }, {
 ## 🔐 With Encryption
 
 ```js
-const store = createKosh({ authToken: '' }, {
-  persistKey: 'secure-auth',
-  secret: 'my-secret-key'
+const store = createKosh({
+  state: { authToken: '' },
+  persistKey: 'secure-auth', // The persistence key
+  secret: 'my-secret-key'  // The encryption key
 });
+
 ```
 
 ---
@@ -69,7 +78,9 @@ const store = createKosh({ authToken: '' }, {
 ## 🔧 With Async Effects
 
 ```js
-const store = createKosh({ data: null });
+const store = createKosh({
+  state: { data: null }
+});
 
 store.effect('fetchData', async () => {
   const res = await fetch('https://api.example.com/data');
@@ -170,7 +181,7 @@ export class CounterComponent implements OnInit, OnDestroy {
 
 ## 📚 API Reference
 
-### `createKosh(initialState, options)`
+### `createKosh(options)`
 - `persistKey`: string (optional) — key for persistent storage
 - `ttl`: number (optional) — expiration in milliseconds
 - `secret`: string (optional) — for encryption
