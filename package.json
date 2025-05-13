@@ -1,0 +1,29 @@
+
+{
+  "name": "kosh",
+  "version": "1.0.0",
+  "description": "A lightweight, modular, and beginner-friendly state management library.",
+  "main": "src/index.js",
+  "scripts": {
+    "start":"node src/index.js"
+  },
+  "keywords": [
+    "state management",
+    "react",
+    "vue",
+    "angular",
+    "persistent state",
+    "encryption",
+    "javascript"
+  ],
+  "author": "sachin sharma",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/kosh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/kosh/issues"
+  },
+  "homepage": "https://github.com/your-username/kosh#readme"
+}
