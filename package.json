@@ -20,10 +20,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/kosh.git"
+    "url": "git+https://github.com/Sachinsharmawebdev/kosh.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/kosh/issues"
+    "url": "https://github.com/Sachinsharmawebdev/kosh/issues"
   },
-  "homepage": "https://github.com/your-username/kosh#readme"
+  "homepage": "https://github.com/Sachinsharmawebdev/kosh/blob/main/README.md"
 }
