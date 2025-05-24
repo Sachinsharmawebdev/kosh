@@ -1,4 +1,4 @@
-import { createKosh } from './src/index.js';
+import { createKosh } from '../src/index.js';
 
 // Create store with sessionStorage
 const store = createKosh(
