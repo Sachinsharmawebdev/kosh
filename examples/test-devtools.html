@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kosh DevTools Test</title>
+    <script type="module">
+        import { createKosh } from './src/index.js';
+
+        // Create store with devtools enabled
+        const store = createKosh(
+            { count: 0, user: { name: 'John', age: 30 } },
+            {
+                persistKey: 'devtools-test',
+                devtools: {
+                    name: 'My App Store',
+                    enabled: true
+                },
+                actions: {
+                    increment: (state) => ({ ...state, count: state.count + 1 }),
+                    updateUser: (state, user) => ({ ...state, user })
+                },
+                effects: {
+                    fetchUser: async ({ set }) => {
+                        set('loading', true);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        set({ 
+                            user: { name: 'Jane', age: 25 },
+                            loading: false 
+                        });
+                    }
+                }
+            }
+        );
+
+        // Add some UI to test the store
+        const app = document.createElement('div');
+        app.innerHTML = `
+            <div style="padding: 20px;">
+                <h2>Kosh DevTools Test</h2>
+                <div>
+                    <p>Count: <span id="count">0</span></p>
+                    <button onclick="window.store.increment()">Increment</button>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p>User: <span id="user">Loading...</span></p>
+                    <button onclick="window.store.fetchUser()">Fetch User</button>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p>Press Ctrl+Shift+K to toggle DevTools</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(app);
+
+        // Make store globally accessible for button clicks
+        window.store = store;
+
+        // Update UI when state changes
+        store.subscribe((state) => {
+            document.getElementById('count').textContent = state.count;
+            document.getElementById('user').textContent = 
+                state.loading ? 'Loading...' : 
+                `${state.user.name} (${state.user.age})`;
+        });
+    </script>
+</head>
+<body>
+</body>
+</html> 

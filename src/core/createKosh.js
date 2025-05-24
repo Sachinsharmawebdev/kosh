@@ -1,5 +1,6 @@
 // src/core/createKosh.js
 import { deepClone, loadPersisted, savePersisted, removePersisted } from './storage.js';
+import { createDevTools } from './devtools.js';
 
 export function createKosh(initialState = {}, options = {}) {
   const {
@@ -8,7 +9,8 @@ export function createKosh(initialState = {}, options = {}) {
     persistKey = null,
     storage: customStorage,
     ttl = null,
-    secret = ''
+    secret = '',
+    devtools = {}
   } = options;
 
   const isBrowser = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -68,12 +70,26 @@ export function createKosh(initialState = {}, options = {}) {
     };
   }
 
-  return {
+  const store = {
     get,
     set,
     subscribe,
     clear,
     ...boundActions,
     ...boundEffects
+  };
+
+  // Initialize devtools if in browser and enabled
+  let devToolsInstance = null;
+  if (isBrowser && devtools.enabled !== false) {
+    devToolsInstance = createDevTools(store, {
+      name: devtools.name || 'Kosh Store',
+      ...devtools
+    });
+  }
+
+  return {
+    ...store,
+    devTools: devToolsInstance
   };
 }

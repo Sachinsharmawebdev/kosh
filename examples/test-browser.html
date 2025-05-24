@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kosh Library Test</title>
+    <script type="module">
+        import { createKosh } from './src/index.js';
+
+        // Test 1: Basic State Management
+        console.log('\n=== Test 1: Basic State Management ===');
+        const basicStore = createKosh({ count: 0, name: 'test' });
+        console.log('Initial state:', basicStore.get());
+        basicStore.set('count', 5);
+        console.log('After set count:', basicStore.get());
+        basicStore.set({ count: 10, name: 'updated' });
+        console.log('After set multiple:', basicStore.get());
+
+        // Test 2: Persistence with localStorage
+        console.log('\n=== Test 2: Persistence with localStorage ===');
+        const persistStore = createKosh(
+            { data: 'persisted' },
+            { persistKey: 'test-persist' }
+        );
+        console.log('Initial persisted state:', persistStore.get());
+        persistStore.set('data', 'updated-persisted');
+        console.log('Updated persisted state:', persistStore.get());
+        console.log('localStorage data:', localStorage.getItem('test-persist'));
+
+        // Test 3: Session Storage
+        console.log('\n=== Test 3: Session Storage ===');
+        const sessionStore = createKosh(
+            { sessionData: 'session' },
+            { 
+                persistKey: 'test-session',
+                storage: window.sessionStorage
+            }
+        );
+        console.log('Initial session state:', sessionStore.get());
+        sessionStore.set('sessionData', 'updated-session');
+        console.log('Updated session state:', sessionStore.get());
+        console.log('sessionStorage data:', sessionStorage.getItem('test-session'));
+
+        // Test 4: TTL (Time To Live)
+        console.log('\n=== Test 4: TTL Functionality ===');
+        const ttlStore = createKosh(
+            { ttlData: 'ttl-test' },
+            {
+                persistKey: 'test-ttl',
+                ttl: 2000 // 2 seconds
+            }
+        );
+        console.log('Initial TTL state:', ttlStore.get());
+        ttlStore.set('ttlData', 'ttl-updated');
+        console.log('Updated TTL state:', ttlStore.get());
+        console.log('TTL data in storage:', localStorage.getItem('test-ttl'));
+
+        // Test 5: Encryption
+        console.log('\n=== Test 5: Encryption ===');
+        const encryptedStore = createKosh(
+            { secret: 'sensitive-data' },
+            {
+                persistKey: 'test-encrypted',
+                secret: 'my-secret-key'
+            }
+        );
+        console.log('Initial encrypted state:', encryptedStore.get());
+        encryptedStore.set('secret', 'updated-sensitive');
+        console.log('Updated encrypted state:', encryptedStore.get());
+        console.log('Encrypted data in storage:', localStorage.getItem('test-encrypted'));
+
+        // Test 6: Actions
+        console.log('\n=== Test 6: Actions ===');
+        const actionStore = createKosh(
+            { count: 0 },
+            {
+                actions: {
+                    increment: (state) => ({ ...state, count: state.count + 1 }),
+                    multiply: (state, factor) => ({ ...state, count: state.count * factor })
+                }
+            }
+        );
+        console.log('Initial action state:', actionStore.get());
+        actionStore.increment();
+        console.log('After increment:', actionStore.get());
+        actionStore.multiply(2);
+        console.log('After multiply:', actionStore.get());
+
+        // Test 7: Effects (Async Actions)
+        console.log('\n=== Test 7: Effects ===');
+        const effectStore = createKosh(
+            { data: null, loading: false },
+            {
+                effects: {
+                    fetchData: async ({ set }) => {
+                        set('loading', true);
+                        // Simulate API call
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        set({ data: 'fetched-data', loading: false });
+                    }
+                }
+            }
+        );
+        console.log('Initial effect state:', effectStore.get());
+        await effectStore.fetchData();
+        console.log('After effect:', effectStore.get());
+
+        // Test 8: Subscribe and Unsubscribe
+        console.log('\n=== Test 8: Subscribe and Unsubscribe ===');
+        const subscribeStore = createKosh({ value: 0 });
+        let lastValue = null;
+        const unsubscribe = subscribeStore.subscribe((state) => {
+            lastValue = state.value;
+            console.log('Subscription update:', state);
+        });
+        subscribeStore.set('value', 1);
+        unsubscribe();
+        subscribeStore.set('value', 2);
+        console.log('Last subscription value:', lastValue);
+
+        // Test 9: Clear Functionality
+        console.log('\n=== Test 9: Clear Functionality ===');
+        const clearStore = createKosh(
+            { data: 'to-clear' },
+            { persistKey: 'test-clear' }
+        );
+        console.log('Initial clear state:', clearStore.get());
+        clearStore.set('data', 'updated-to-clear');
+        console.log('Before clear:', clearStore.get());
+        clearStore.clear();
+        console.log('After clear:', clearStore.get());
+        console.log('Storage after clear:', localStorage.getItem('test-clear'));
+
+        // Test 10: Deep Clone Functionality
+        console.log('\n=== Test 10: Deep Clone ===');
+        const deepStore = createKosh({
+            nested: {
+                data: {
+                    value: 'deep'
+                }
+            }
+        });
+        const state1 = deepStore.get();
+        state1.nested.data.value = 'modified';
+        const state2 = deepStore.get();
+        console.log('Original state:', state2.nested.data.value);
+
+        // Cleanup
+        localStorage.removeItem('test-persist');
+        localStorage.removeItem('test-ttl');
+        localStorage.removeItem('test-encrypted');
+        localStorage.removeItem('test-clear');
+        sessionStorage.removeItem('test-session');
+    </script>
+</head>
+<body>
+    <h1>Kosh Library Test</h1>
+    <p>Open browser console to see test results</p>
+</body>
+</html> 

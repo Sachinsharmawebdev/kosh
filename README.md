@@ -1,204 +1,302 @@
+# Kosh - Lightweight State Management
 
-# Kosh 🧠⚡
+Kosh is a lightweight, framework-agnostic state management library that provides a simple and powerful way to manage your application's state. It includes built-in persistence, security features, and a powerful DevTools for debugging.
 
-**Kosh** is a powerful, modular, and lightweight state management library for JavaScript and frontend frameworks.  
-Built with simplicity and flexibility in mind, Kosh supports in-memory storage, optional persistence with TTL, encryption, and reactive updates — making it ideal for both small apps and complex applications.
+## Features
 
----
+- 🚀 **Lightweight**: Minimal bundle size with zero dependencies
+- 🔄 **Framework Agnostic**: Works with any framework (React, Vue, Angular, etc.)
+- 💾 **Persistence**: Built-in support for localStorage and sessionStorage
+- 🔒 **Security**: Optional encryption for sensitive data
+- 🛠️ **DevTools**: Powerful debugging tools with time travel
+- ⚡ **Performance**: Optimized for performance with minimal overhead
+- 📦 **TypeScript**: Full TypeScript support
+- 🔌 **Extensible**: Easy to extend with custom storage and middleware
 
-## 🚀 Features
-
-- ✅ Minimal setup, zero boilerplate
-- 🔒 Optional encryption for secure storage
-- ♻️ Reactive updates with `subscribe()`
-- 🧱 Modular and pluggable architecture
-- 💾 Built-in persistence with TTL support
-- ⚡ Framework agnostic — works with React, Vue, Angular, Vanilla JS
-- 🪶 Super lightweight (~2 KB gzipped)
-
----
-
-## 📦 Installation
+## Installation
 
 ```bash
 npm install kosh
 ```
 
----
+## Quick Start
 
-## 🧪 Basic Usage (Vanilla JS)
-
-```js
+```javascript
 import { createKosh } from 'kosh';
 
-const store = createKosh({
-  state: { count: 0 },  // State object
-  persistKey: 'my-app-count', // Persistence key for storing state
-  ttl: 86400000, // Optional TTL (Time-to-live) for persistence
-  secret: 'my-secret-key', // Optional encryption key
-});
+// Create a store
+const store = createKosh(
+  { count: 0 },
+  {
+    actions: {
+      increment: (state) => ({ ...state, count: state.count + 1 })
+    },
+    effects: {
+      fetchData: async ({ set }) => {
+        const data = await api.getData();
+        set('data', data);
+      }
+    },
+    devtools: {
+      enabled: true
+    }
+  }
+);
 
-store.subscribe(state => {
-  console.log('Updated state:', state);
-});
-
-store.set('count', prev => prev + 1);
-store.set({ count: 100 });
-console.log(store.get('count')); // 100
+// Use the store
+store.get('count'); // 0
+store.increment();
+store.get('count'); // 1
 ```
 
----
+## Core Features
 
-## 🔁 With Persistence
+### State Management
 
-```js
-const store = createKosh({
-  state: { theme: 'light' },
-  persistKey: 'my-app-theme',  // The persistence key
-  ttl: 86400000, // 1 day in ms (optional)
+```javascript
+const store = createKosh({ count: 0 });
+
+// Get state
+const count = store.get('count');
+const fullState = store.get();
+
+// Set state
+store.set('count', 1);
+store.set({ count: 2, user: { name: 'John' } });
+
+// Subscribe to changes
+const unsubscribe = store.subscribe((state) => {
+  console.log('State changed:', state);
 });
-
 ```
 
----
+### Actions
 
-## 🔐 With Encryption
+```javascript
+const store = createKosh(
+  { count: 0 },
+  {
+    actions: {
+      increment: (state) => ({ ...state, count: state.count + 1 }),
+      setCount: (state, count) => ({ ...state, count })
+    }
+  }
+);
 
-```js
-const store = createKosh({
-  state: { authToken: '' },
-  persistKey: 'secure-auth', // The persistence key
-  secret: 'my-secret-key'  // The encryption key
-});
-
+store.increment();
+store.setCount(5);
 ```
 
----
+### Effects
 
-## 🔧 With Async Effects
+```javascript
+const store = createKosh(
+  { data: null, loading: false },
+  {
+    effects: {
+      fetchData: async ({ set, get }) => {
+        set('loading', true);
+        const data = await api.getData();
+        set({ data, loading: false });
+      }
+    }
+  }
+);
 
-```js
-const store = createKosh({
-  state: { data: null }
-});
-
-store.effect('fetchData', async () => {
-  const res = await fetch('https://api.example.com/data');
-  const json = await res.json();
-  store.set('data', json);
-});
-
-store.effects.fetchData();
+store.fetchData();
 ```
 
----
+### Persistence
 
-## ⚛️ React Usage
+```javascript
+const store = createKosh(
+  { count: 0 },
+  {
+    persistKey: 'my-app-state',
+    storage: window.localStorage, // or sessionStorage
+    ttl: 3600 // Time to live in seconds
+  }
+);
+```
+
+### Security
+
+```javascript
+const store = createKosh(
+  { sensitiveData: 'secret' },
+  {
+    secret: 'your-secret-key',
+    persistKey: 'encrypted-state'
+  }
+);
+```
+
+## DevTools
+
+Kosh includes a powerful DevTools for debugging your application state:
+
+```javascript
+const store = createKosh(
+  { count: 0 },
+  {
+    devtools: {
+      enabled: true,
+      name: 'My Store',
+      maxHistory: 50
+    }
+  }
+);
+```
+
+### DevTools Features
+
+- 🔍 **State Inspection**: View and search your application state
+- ⏱️ **Time Travel**: Navigate through state history
+- 📝 **Action Logging**: Track all actions and effects
+- 🔄 **State Diff**: Compare state changes
+- 📤 **Export/Import**: Save and load state snapshots
+
+For detailed DevTools documentation, see [DEVTOOLS.md](./DEVTOOLS.md).
+
+## Framework Integration
+
+### React
 
 ```jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createKosh } from 'kosh';
 
-const counterStore = createKosh({ count: 0 });
+const store = createKosh({ count: 0 });
 
 function Counter() {
-  const [state, setState] = useState(counterStore.get());
+  const [state, setState] = useState(store.get());
 
   useEffect(() => {
-    const unsub = counterStore.subscribe(setState);
-    return unsub;
+    return store.subscribe(setState);
   }, []);
 
   return (
     <div>
       <p>Count: {state.count}</p>
-      <button onClick={() => counterStore.set('count', c => c + 1)}>+</button>
+      <button onClick={() => store.set('count', state.count + 1)}>
+        Increment
+      </button>
     </div>
   );
 }
 ```
 
----
+### Vue
 
-## 🖼️ Vue Usage (v3 Composition API)
-
-```js
-import { ref, onMounted } from 'vue';
+```vue
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { createKosh } from 'kosh';
 
-const store = createKosh({ user: null });
+const store = createKosh({ count: 0 });
+const state = ref(store.get());
 
-export default {
-  setup() {
-    const state = ref(store.get());
+let unsubscribe;
 
-    onMounted(() => {
-      const unsub = store.subscribe(s => state.value = s);
-      return unsub;
-    });
+onMounted(() => {
+  unsubscribe = store.subscribe((newState) => {
+    state.value = newState;
+  });
+});
 
-    return { state };
-  }
-};
+onUnmounted(() => {
+  unsubscribe();
+});
+</script>
+
+<template>
+  <div>
+    <p>Count: {{ state.count }}</p>
+    <button @click="store.set('count', state.count + 1)">
+      Increment
+    </button>
+  </div>
+</template>
 ```
 
----
+### Angular
 
-## 🅰️ Angular (with RxJS-like behavior)
-
-```ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+```typescript
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { createKosh } from 'kosh';
 
-const store = createKosh({ value: 0 });
-
-@Component({
-  selector: 'app-counter',
-  template: `
-    <p>{{ state?.value }}</p>
-    <button (click)="increment()">Increment</button>
-  `
+@Injectable({
+  providedIn: 'root'
 })
-export class CounterComponent implements OnInit, OnDestroy {
-  state: any;
-  private unsub: () => void;
+export class StoreService {
+  private store = createKosh({ count: 0 });
+  private stateSubject = new BehaviorSubject(this.store.get());
 
-  ngOnInit() {
-    this.unsub = store.subscribe(s => this.state = s);
+  constructor() {
+    this.store.subscribe((state) => {
+      this.stateSubject.next(state);
+    });
   }
 
-  ngOnDestroy() {
-    this.unsub?.();
+  getState() {
+    return this.stateSubject.asObservable();
   }
 
   increment() {
-    store.set('value', v => v + 1);
+    this.store.set('count', this.store.get('count') + 1);
   }
 }
 ```
 
----
+## TypeScript Support
 
-## 📚 API Reference
+Kosh provides full TypeScript support. See [TYPESCRIPT.md](./TYPESCRIPT.md) for detailed documentation.
 
-### `createKosh(options)`
-- `persistKey`: string (optional) — key for persistent storage
-- `ttl`: number (optional) — expiration in milliseconds
-- `secret`: string (optional) — for encryption
-- `storage`: localStorage/sessionStorage (default: localStorage)
+```typescript
+interface AppState {
+  count: number;
+  user: {
+    name: string;
+    age: number;
+  };
+}
 
-### Store Methods
+const store = createKosh<AppState>({
+  count: 0,
+  user: {
+    name: 'John',
+    age: 30
+  }
+});
+```
 
-| Method        | Description                                |
-|---------------|--------------------------------------------|
-| `get(key?)`   | Get full state or a specific key           |
-| `set(key, value)` | Set state key or partial object        |
-| `subscribe(cb)` | Subscribe to state changes               |
-| `effect(name, fn)` | Register an async side-effect         |
-| `clear()`     | Clears all state and subscribers           |
+## Best Practices
 
----
+1. **Store Organization**
+   - Split stores by feature/domain
+   - Use meaningful store names
+   - Keep state normalized
 
-## 📘 License
+2. **Performance**
+   - Use selective subscriptions
+   - Implement proper cleanup
+   - Monitor DevTools performance
 
-MIT © 2025 — Made with ❤️ for modern frontend developers by sachin sharma from India
+3. **Security**
+   - Encrypt sensitive data
+   - Use appropriate storage
+   - Implement proper TTL
+
+4. **Development**
+   - Enable DevTools in development
+   - Use TypeScript for type safety
+   - Follow naming conventions
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
